@@ -1,0 +1,8 @@
+name = "SVELTE-REALM"
+
+compatibility_date = "2023-12-21"
+
+account_id = "a4e5b04dd7558773c3f4e97969590deb"
+
+[vars]
+REALM_APPID = "application-0-sjvuc"
