@@ -27,7 +27,7 @@ interface User extends document {
 let App: Realm.App;
 const ObjectId = Realm.BSON.ObjectID;
 
-export async function POST({ request, env }) {
+export async function GET({ request, env }) {
 	App = App || new Realm.App(env.REALM_APPID);
 
 	const token = request.headers.get('authorization');
