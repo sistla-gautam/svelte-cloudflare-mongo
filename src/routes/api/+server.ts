@@ -1,51 +1,61 @@
 import * as Realm from 'realm-web';
+import type { RequestEvent } from '@sveltejs/kit';
 
-interface Bindings {
-	REALM_APPID: string;
-}
+type Document = globalThis.Realm.Services.MongoDB.Document;
 
-type document = globalThis.Realm.Services.MongoDB.Document;
-
-interface User extends document {
-	id: string;
-	name: string;
-	banner_picture: string;
-	bio: string;
-	city: string;
-	country: string;
+interface User extends Document {
+	playerURL: string;
 	email: string;
-	mode_of_login: string;
-	phone: string;
-	plan: string;
-	profile_picture: string;
-	projects: string[];
-	state: string;
-	streetAddress: string;
-	zip: string;
 }
 
 let App: Realm.App;
 const ObjectId = Realm.BSON.ObjectID;
+let client: any;
+let token: any;
 
-export async function GET({ request, env }) {
-	App = App || new Realm.App(env.REALM_APPID);
-
-	const token = request.headers.get('authorization');
-	if (!token) return new Response('Unauthorized', { status: 401 });
-
-	try {
-		//create a anaoymous user to access the mongodb
-		const user = await App.logIn(Realm.Credentials.anonymous());
-		var client = user.mongoClient('mongodb-atlas');
-	} catch (err) {
-		return new Response('Error with authentication', { status: 401 });
-	}
-	const collection = client.db('random').collection<User>('users');
+export async function GET(event: RequestEvent) {
+	App = App || new Realm.App(event.platform?.env.MONGODB_REALM_APPID);
+	token = event.platform?.env.MONGODB_API_TOKEN;
 
 	try {
-		const result = await collection.find();
-		return new Response(JSON.stringify(result));
+		const credentials = Realm.Credentials.apiKey(token);
+		var user = await App.logIn(credentials);
+		client = await user.mongoClient('mongodb-atlas');
+		const collection = await client.db('random').collection<User>('Users');
+
+		let result = await collection.find();
+
+		if (result) {
+			let response = new Response(
+				JSON.stringify({
+					userExists: true,
+					email: result.email,
+					playerURL: result.playerURL
+				}),
+				{
+					status: 200,
+					headers: {
+						'content-type': 'Application/json'
+					}
+				}
+			);
+			return response;
+		} else {
+			let response = new Response(JSON.stringify('No response'), {
+				status: 200,
+				headers: {
+					'content-type': 'Application/json'
+				}
+			});
+			return response;
+		}
 	} catch (err) {
-		return new Response('Error', { status: 401 });
+		let response = new Response(JSON.stringify(err), {
+			status: 500,
+			headers: {
+				'content-type': 'text/plain; charset=UTF-8'
+			}
+		});
+		return response;
 	}
 }
