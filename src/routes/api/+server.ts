@@ -28,9 +28,7 @@ export async function GET(event: RequestEvent) {
 		if (result) {
 			let response = new Response(
 				JSON.stringify({
-					userExists: true,
-					email: result.email,
-					playerURL: result.playerURL
+					result
 				}),
 				{
 					status: 200,
