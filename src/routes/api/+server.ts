@@ -3,10 +3,10 @@ import type { RequestEvent } from '@sveltejs/kit';
 
 type Document = globalThis.Realm.Services.MongoDB.Document;
 
-interface User extends Document {
-	playerURL: string;
-	email: string;
-}
+// interface User extends Document {
+// 	playerURL: string;
+// 	email: string;
+// }
 
 let App: Realm.App;
 const ObjectId = Realm.BSON.ObjectID;
@@ -21,7 +21,7 @@ export async function GET(event: RequestEvent) {
 		const credentials = Realm.Credentials.apiKey(token);
 		var user = await App.logIn(credentials);
 		client = await user.mongoClient('mongodb-atlas');
-		const collection = await client.db('random').collection<User>('Users');
+		const collection = await client.db('random').collection('Users');
 
 		let result = await collection.find();
 
